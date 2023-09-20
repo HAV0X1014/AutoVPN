@@ -1,0 +1,29 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'miat'
+version = '0.1'
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation 'org.javacord:javacord:3.8.0'
+    implementation 'org.json:json:20230618'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'miat.VPNMain'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
