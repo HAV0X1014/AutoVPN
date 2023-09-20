@@ -1,0 +1,11 @@
+{
+  "Config": {
+    "Token": "",
+    "StatusText": "Sandstar VPN services :o",
+    "Key": "Your passkey you set when you set up your server",
+    "SudoPassword": "server sudo password",
+    "RegisterSlashCommands": true,
+    "Prefix": ">",
+    "ServerID": ""
+  }
+}
