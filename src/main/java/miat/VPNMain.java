@@ -2,6 +2,7 @@ package miat;
 
 import miat.FileHandlers.*;
 import miat.UtilityCommands.CreateVPN;
+import miat.UtilityCommands.RevokeVPN;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.activity.ActivityType;
@@ -24,7 +25,7 @@ public class VPNMain {
     static String key = ConfigHandler.getString("Key", configFile);
     static String sudoPassword = ConfigHandler.getString("SudoPassword", configFile);
     static String prefix = ConfigHandler.getString("Prefix", configFile);
-    static String serverID = ConfigHandler.getString("ServerID", configFile);
+
     public static void main(String[] args) {
         DiscordApi api = new DiscordApiBuilder().setToken(token).setIntents(Intent.MESSAGE_CONTENT, Intent.GUILD_MESSAGES, Intent.DIRECT_MESSAGES).login().join();
         int startTime = (int) (System.currentTimeMillis() / 1000);
@@ -33,9 +34,9 @@ public class VPNMain {
         api.updateActivity(ActivityType.PLAYING,statusText);
 
         if (registerSlashCommands) {
-            SlashCommand.with("vpn", "Make a private VPN connection file for you. One per person.").createForServer(api, Long.parseLong(serverID)).join();
-            SlashCommand.with("deletevpn","Revoke your VPN connection.", Arrays.asList(SlashCommandOption.create(SlashCommandOptionType.BOOLEAN, "Check", "THIS WILL MAKE YOUR CONNECTION FILE INVALID!!", true))).createForServer(api, Long.parseLong(serverID)).join();
-            SlashCommand.with("revokevpn","(Whitelist/owner ONLY) Revoke a user's VPN access.", Arrays.asList(SlashCommandOption.create(SlashCommandOptionType.STRING, "User", "Revokes the selected user's access", true))).createForServer(api, Long.parseLong(serverID)).join();
+            SlashCommand.with("vpn", "Make a private VPN connection file specifically for you. One per person.").createGlobal(api).join();
+            SlashCommand.with("deletevpn","Revoke your VPN connection. !!WARNING!! This will remove your ability to connect to the VPN!", Arrays.asList(SlashCommandOption.create(SlashCommandOptionType.BOOLEAN, "Check", "THIS WILL MAKE YOUR CONNECTION FILE INVALID!!", true))).createGlobal(api).join();
+            SlashCommand.with("revokevpn","(Whitelist/owner ONLY) Revoke a user's VPN access by userID.", Arrays.asList(SlashCommandOption.create(SlashCommandOptionType.STRING, "User", "Revokes the selected user's access", true))).createGlobal(api).join();
             System.out.println("SLASH COMMANDS REGISTERED! Set \"RegisterSlashCommands\" to \"false\" in config.json!");
         }
         api.addSlashCommandCreateListener(event -> {
@@ -43,15 +44,24 @@ public class VPNMain {
             String command = interaction.getCommandName();
             switch (command) {
                 case "vpn":
-                    String uid = String.valueOf(interaction.getUser().getId());
-                    interaction.getUser().openPrivateChannel().join().sendMessage(CreateVPN.create(uid, key, sudoPassword));
-                    interaction.createImmediateResponder().setContent("The ``.ovpn`` connection file has been sent to your DMs!").setFlags(MessageFlag.EPHEMERAL).respond();
+                    String userIDvpn = interaction.getUser().getIdAsString();
+                    interaction.getUser().openPrivateChannel().join().sendMessage(CreateVPN.create(userIDvpn, key, sudoPassword), userIDvpn + ".ovpn");
+                    interaction.createImmediateResponder().setContent("The ``.ovpn`` connection file has been sent to your DMs!\nDownload [OpenVPN Connect](https://openvpn.net/client/), and import the file to connect to the server.\nIf you wish to remove access to your VPN file, use ``/deletevpn``.").respond();
                     break;
                 case "deletevpn":
-                    interaction.createImmediateResponder().setContent("Not yet implemented").setFlags(MessageFlag.EPHEMERAL).respond();
+                    String userIDdlt = interaction.getUser().getIdAsString();
+                    RevokeVPN.revoke(userIDdlt, key, sudoPassword);
+                    interaction.createImmediateResponder().setContent("Your previous ``.ovpn`` file has been deleted/revoked.").setFlags(MessageFlag.EPHEMERAL).respond();
+                    interaction.getUser().openPrivateChannel().join().sendMessage("Your previous ``.ovpn`` file has been deleted/revoked.");
                     break;
                 case "revokevpn":
-                    interaction.createImmediateResponder().setContent("Not yet implemented").setFlags(MessageFlag.EPHEMERAL).respond();
+                    if (Whitelist.whitelisted(interaction.getUser().getIdAsString())) {
+                        String userIDrvk = interaction.getArgumentByName("user").get().getStringValue().get();
+                        RevokeVPN.revoke(userIDrvk, key, sudoPassword);
+                        interaction.createImmediateResponder().setContent("``.ovpn`` connection for <@" + userIDrvk + "> has been revoked.").setFlags(MessageFlag.EPHEMERAL).respond();
+                    } else {
+                        interaction.createImmediateResponder().setContent("You must be on the whitelist to execute this command.").setFlags(MessageFlag.EPHEMERAL).respond();
+                    }
                     break;
             }
         });
@@ -71,6 +81,10 @@ public class VPNMain {
                         long hours = duration.toHours();
                         long minutes = duration.minusHours(hours).toMinutes();
                         mc.getMessage().reply(String.format("``%04d`` hours, ``%02d`` minutes",hours,minutes));
+                    case "vpn":
+                        String userID = mc.getMessage().getAuthor().getIdAsString();
+                        mc.getMessage().getUserAuthor().get().sendMessage(CreateVPN.create(userID, key, sudoPassword), userID + ".ovpn");
+                        mc.getMessage().reply("The ``.ovpn`` connection file has been sent to your DMs!\nDownload [OpenVPN Connect](https://openvpn.net/client/), and import the file to connect to the server.\nIf you wish to remove access to your VPN file, use ``/deletevpn``.");
                 }
             }
         });

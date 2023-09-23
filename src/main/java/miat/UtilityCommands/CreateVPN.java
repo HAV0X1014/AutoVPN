@@ -3,9 +3,10 @@ package miat.UtilityCommands;
 import miat.FileHandlers.ReadFull;
 
 import java.io.*;
+import java.nio.file.Files;
 
 public class CreateVPN {
-    public static File create(String userID, String key, String sudoPassword) {
+    public static InputStream create(String userID, String key, String sudoPassword) {
         try {
             String[] makeClient = {"/bin/sh", "-c", "cd /etc/openvpn/server/easy-rsa/ && echo '" + sudoPassword + "' | sudo -S -k  EASYRSA_CERT_EXPIRE=3650 ./easyrsa --passin=pass:" + key + " build-client-full " + userID + " nopass"};
 
@@ -13,6 +14,13 @@ public class CreateVPN {
             Process process = processBuilder.start();
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+            reader.close();
+            process.destroy();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -30,6 +38,9 @@ public class CreateVPN {
             while ((line = reader.readLine()) != null) {
                 caFileContents.append(line).append("\n");
             }
+            System.out.println(caFileContents.toString());
+            reader.close();
+            process.destroy();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -47,6 +58,9 @@ public class CreateVPN {
             while ((line = reader.readLine()) != null) {
                 crtFileContents.append(line).append("\n");
             }
+            System.out.println(crtFileContents.toString());
+            reader.close();
+            process.destroy();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,6 +78,9 @@ public class CreateVPN {
             while ((line = reader.readLine()) != null) {
                 keyFileContents.append(line).append("\n");
             }
+            System.out.println(keyFileContents.toString());
+            reader.close();
+            process.destroy();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -81,6 +98,9 @@ public class CreateVPN {
             while ((line = reader.readLine()) != null) {
                 tcFileContents.append(line).append("\n");
             }
+            System.out.println(tcFileContents.toString());
+            reader.close();
+            process.destroy();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -108,13 +128,21 @@ public class CreateVPN {
 
         File tempFile = null;
         try {
-            tempFile = File.createTempFile(userID, ".ovpn");
+            tempFile = Files.createTempFile(userID, ".ovpn").toFile();
             FileWriter fw = new FileWriter(tempFile);
             fw.write(completeOVPN.toString());
             fw.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return tempFile;
+
+        InputStream ovpn = null;
+        try {
+            ovpn = new FileInputStream(tempFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return ovpn;
     }
 }

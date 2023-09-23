@@ -13,10 +13,10 @@ public class ReadFull {
             while ((line = br.readLine()) != null) {
                 fullText += line + "\n";
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         return fullText;
     }
 }
