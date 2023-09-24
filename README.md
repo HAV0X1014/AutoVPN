@@ -20,3 +20,5 @@ A java discord bot to automatically create .ovpn connection files, using javacor
 This is based off of Nyr's [openvpn-install](https://github.com/Nyr/openvpn-install) script, using many of the same methods and shell commands. This is essentially an automatic way to generate and revoke new clients without needing access to the command line.
 
 The script this installer is based on is a different version from the latest release. The required script is in this repo.
+
+The "Green Grid" image comes from [here](https://commons.wikimedia.org/wiki/File:Grid_in_green_(15993673965).jpg) licensed under CC-2.0
