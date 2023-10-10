@@ -16,6 +16,10 @@ A java discord bot to automatically create .ovpn connection files, using javacor
 - Users can delete or revoke access to their existing connection with the /deletevpn command.
 - Whitelisted members can revoke access to other user's VPN access with the /revokevpn command. The command accepts userIDs as strings. Add a user's userID to "Whitelist" to give them access. This should only be given to the server operator.
 
+- A good cheap VPS host for the US (in Montreal) is Webdock. My affiliate link -> https://webdock.io/en?maff=wdaff--257
+
+- A good chep VPS host for nearly anywhere else is HostHatch. My affiliate link -> https://cloud.hosthatch.com/a/3718
+
 ## Credit
 This is based off of Nyr's [openvpn-install](https://github.com/Nyr/openvpn-install) script, using many of the same methods and shell commands. This is essentially an automatic way to generate and revoke new clients without needing access to the command line.
 
